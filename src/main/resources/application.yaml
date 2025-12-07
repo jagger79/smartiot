@@ -1,0 +1,80 @@
+server.port: 8080
+spring.main.banner-mode: off
+spring.application.name: @project.artifactId@
+#spring.config:
+#  import: classpath:./application-${spring.profiles.active}.yaml
+
+server:
+  http2:
+    enabled: true
+
+server.tomcat:
+  max-http-form-post-size: 50MB
+  max-http-response-header-size: 8KB
+  max-swallow-size: 50MB
+
+spring.servlet.multipart:
+  max-request-size: 50MB
+  max-file-size: 50MB
+  file-size-threshold: 1MB
+
+spring:
+  threads.virtual.enabled: true
+  jpa.open-in-view: false
+
+management:
+  info:
+    build.enabled: true
+    env.enabled: true
+    git.mode: full
+    java.enabled: true
+    os.enabled: true
+    process.enabled: true
+    ssl.enabled: true
+  endpoint:
+    configprops.show-values: always
+    env.show-values: always
+    health.show-details: always
+    health.show-components: always
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure.include: "*"
+  defaults.metrics.export.enabled: true
+  elastic.metrics.export:
+    enabled: false
+    host: http://localhost:9200
+    index: kafka-service
+    user-name: "test"
+    password: "test"
+
+spring.jackson:
+  default-property-inclusion: non_null
+  serialization:
+    indent-output: off
+    write-empty-json-arrays: false
+  json:
+    read:
+      allow-java-comments: on
+      allow-yaml-comments: on
+    write:
+      combine-unicode-surrogates-in-utf8: true
+
+logging:
+  structured:
+    ecs.service.environment: prod
+    #format.console: ecs
+  level:
+    ROOT: info
+    com.zsmartsystems: trace
+    com.zsmartsystems.zigbee.dongle.ember.internal.ash: debug
+
+########################################################################
+############### APPLICATION specific settings ##########################
+########################################################################
+service.common:
+  api:
+    base-path: /api
+  error-mapping:
+    ResourceNotFoundException: BAD_REQUEST
+    InvalidRequestException: BAD_REQUEST

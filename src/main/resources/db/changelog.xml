@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <property name="author" value="smartiot"/>
+
+    <!--    <property name="dbuser" value="LEADTOOL_USR"/>-->
+    <!--    <property name="dbuser_nifi" value="LEADTOOL_USR_EXTRACTOR"/>-->
+    <!--    <property name="dbuser_readonly" value="PERFMON_USR"/>-->
+
+    <!--    <property name="tablespace_data" value="ONCR_DATA"/>-->
+    <!--    <property name="tablespace_index" value="ONCR_IDX"/>-->
+
+    <!-- all database scripts -->
+    <include file="changelog/1.0.0_initial.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

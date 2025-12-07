@@ -1,0 +1,296 @@
+openapi: 3.0.1
+
+info:
+  version: ${project.version}
+  title: ${project.artifactId}
+
+servers:
+  - url: https://localhost:12080/
+    description: Local
+  - url: https://localhost:12080/
+    description: Devel
+  - url: https://localhost:12080/
+    description: Pre-prod
+  - url: https://localhost:12080/
+    description: Prod
+
+tags:
+  - name: addons
+    description: Management for addons for products
+  - name: application
+    description: Application's own management
+  - name: products
+    description: Management for products containing search and aggregation capabilities
+  - name: installments
+    description: Management for installments of products
+
+####################################################################################
+####################################################################################
+####################################################################################
+####################################################################################
+paths:
+  /api/addons/search:
+    post:
+      tags:
+        - addons
+      summary: Search addons by filter criteria
+      operationId: searchAddons
+      requestBody:
+        description: filter
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchProductsRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SearchProductsPagedResponse'
+        400:
+          description: Expected client error.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Unexpected server error.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - jwt: [ ]
+
+####################################################################################
+####################################################################################
+####################################################################################
+####################################################################################
+components:
+  securitySchemes:
+    jwt:
+      type: apiKey
+      name: Authorization
+      in: header
+
+  schemas:
+    ####################################################################################
+    # Searching structures
+    ####################################################################################
+    SearchProductsRequest:
+      type: object
+      properties:
+        salesChannelCode:
+          $ref: '#/components/schemas/SalesChannelCode'
+        productIds:
+          type: array
+          description: "Ids of products"
+          items:
+            type: string
+        productTypes:
+          type: array
+          description: "Type of products [TARIFF,HANDSET,ACCESSORY,ADDON,COMPONENT,EUCODEX,EUCODEX_BUNDLE]"
+          items:
+            type: string
+        productCategories:
+          type: array
+          description: "Categories of products [VODAFONE_TV,POSTPAID,FIXED_BROADBAND,TARIFF]"
+          items:
+            type: string
+        partNumbers:
+          type: array
+          description: "Part numbers to be filtered"
+          items:
+            type: string
+        storeAvailability:
+          type: array
+          description: "Filter for availability"
+          items:
+            type: string
+        language:
+          $ref: '#/components/schemas/Language'
+        slugsIn:
+          type: array
+          description: Filter for products having all product slugs
+          items:
+            type: string
+        tags:
+          type: array
+          description: Filter with logical disjunction of product tags, product is included
+          items:
+            type: string
+        tagsNotIn:
+          type: array
+          description: list of tags, where the searched product must not contain any of the listed
+          items:
+            type: string
+        inStock:
+          description: filter only products which are in stock
+          type: boolean
+        attributes:
+          type: array
+          description: Filter for products having all required product attributes
+          items:
+            $ref: '#/components/schemas/AttributeFilterRequest'
+        page:
+          $ref: '#/components/schemas/PageRequest'
+
+    AttributeFilterRequest:
+      title: AttributeFilterRequest
+      type: object
+      required:
+        - slug
+        - optionsIn
+      properties:
+        slug:
+          type: string
+        optionsIn:
+          type: array
+          minItems: 1
+          items:
+            type: string
+
+    SearchProductsPagedResponse:
+      title: SearchProductPagedResponse
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchProductResource'
+        page:
+          $ref: '#/components/schemas/Page'
+
+    SearchProductResource:
+      title: SearchProductResource
+      type: object
+      properties:
+        productInfo:
+          type: object
+          description: "Detail of product depending on type: one of [PublishedAccessory,PublishedHandset,PublishedTariff]"
+        alwaysInStock:
+          type: boolean
+          description: If true this product is always assumes in stock no matter of quantity
+
+    SalesChannelCode:
+      type: string
+      description: Sales channel specifies who requests products
+      example: "[RETAIL,ESHOP,INTERNAL,HOUSEHOLD,CARE,TELESALES]"
+
+    Language:
+      type: string
+      description: Language used for filter purposes, mainly used in slugs / tags
+      example: "[cs,en]"
+
+    ########################################
+    # enumerations defintions
+    ########################################
+    StoreAvailability:
+      type: string
+      description: "Defines availability for item in stock/warehouse"
+      enum:
+        - IN_STOCK
+        - NOT_IN_STOCK
+        - WAREHOUSE
+        - SHOP
+
+    ProductType:
+      type: string
+      description: Type of the product
+      enum:
+        - TARIFF
+        - HANDSET
+        - ACCESSORY
+        - PREPAID
+        - ADDON
+
+    LanguageType:
+      type: string
+      description: Language used for filter purposes, mainly used in slugs / tags
+      enum:
+        - cs
+        - en
+
+    #####################
+    # Common objects
+    #####################
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        parameters:
+          type: object
+          additionalProperties:
+            type: string
+        path:
+          type: string
+        status:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+
+    Page:
+      title: Page
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page beginning from 1
+          format: int32
+        size:
+          type: integer
+          description: Count of the elements for current page
+          format: int32
+        totalElements:
+          type: integer
+          description: Complete total count of all elements
+          format: int64
+        totalPages:
+          type: integer
+          description: Total pages for whole bunch of data
+          format: int32
+
+    PageRequest:
+      title: PageRequest
+      type: object
+      properties:
+        page:
+          type: integer
+          description: which page should be returned
+          format: int32
+        size:
+          type: integer
+          description: size of page, number of elements what should be returned on
+            one page
+          format: int32
+        sort:
+          type: array
+          description: sorting definitions
+          items:
+            $ref: '#/components/schemas/Sort'
+      description: for paging purposes
+
+    Sort:
+      title: Sort
+      required:
+        - direction
+      type: object
+      properties:
+        direction:
+          type: string
+          enum:
+            - ASC
+            - DESC
+        property:
+          pattern: '[a-zA-Z]+(\.[a-zA-Z]+)*'
+          type: string
+          description: define by which property should be sorted
+          example: '''resource.created'' means that should be sorted by created date
+            inside property resource'
+      description: specify sorting criteria

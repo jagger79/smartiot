@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <property name="version" value="1.0.0" global="false"/>
+    <property name="filename" value="1.0.0_initial" global="false"/>
+
+    <!--AUTH -->
+    <changeSet id="${version}-1" author="${author}" logicalFilePath="${filename}">
+        <createSequence incrementBy="1" minValue="1"
+                        sequenceName="sq_auth_user_id" startValue="1"
+                        cacheSize="0"/>
+
+        <rollback>
+            <dropSequence sequenceName="sq_auth_user_id"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="${version}-2" author="${author}" logicalFilePath="${filename}">
+        <createTable tableName="auth_user"
+                     remarks="Contains all users logged-in to application or just defined to be logged-in">
+            <column name="id" type="NUMBER"
+                    defaultValue="nextval('sq_auth_user_id')">
+                <constraints primaryKey="true"
+                             nullable="false"
+                             notNullConstraintName="nn_auth_user_id"/>
+            </column>
+            <column name="login" type="varchar(50)"
+                    remarks="User's login name">
+                <constraints nullable="false"
+                             notNullConstraintName="nn_auth_user_login"/>
+            </column>
+            <column name="first_name" type="varchar(50 char)"
+                    remarks="User's first name, may be null when not yet logged into the application"/>
+            <column name="last_name" type="varchar(50 char)"
+                    remarks="User's last name, may be null when not yet logged into the application"/>
+            <column name="active" type="boolean" defaultValue="true"
+                    remarks="If false user is not visible anymore"/>
+            <column name="readonly" type="boolean" defaultValue="false"
+                    remarks="If true, user cannot be changed only via specialized services"/>
+
+            <!-- default attributes -->
+            <column name="version" type="NUMBER" defaultValue="0"
+                    remarks="Used for pessimistic lock">
+                <constraints nullable="false"
+                             notNullConstraintName="nn_auth_user_ver"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP"
+                    remarks="when row was created">
+                <constraints nullable="false"
+                             notNullConstraintName="nn_auth_user_create"/>
+            </column>
+            <column name="created_by" type="varchar(50 char)"
+                    remarks="user who created row">
+                <constraints nullable="false"
+                             notNullConstraintName="nn_auth_user_cr_by"/>
+            </column>
+            <column name="last_modified_date" type="TIMESTAMP"
+                    remarks="when row was modified">
+                <constraints nullable="false"
+                             notNullConstraintName="nn_auth_user_modif"/>
+            </column>
+            <column name="last_modified_by" type="varchar(50 char)"
+                    remarks="user who modified row">
+                <constraints nullable="false"
+                             notNullConstraintName="nn_auth_user_modif_by"/>
+            </column>
+        </createTable>
+
+        <!-- cant specified TABLESPACE in <constraints/> -->
+        <addUniqueConstraint
+                constraintName="uq_auth_user_login"
+                tableName="auth_user"
+                columnNames="login"/>
+
+        <rollback>
+            <dropTable tableName="auth_user"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
